@@ -1,0 +1,47 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(180) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role VARCHAR(30) NOT NULL DEFAULT 'RESEARCHER',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS datasets (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  description TEXT DEFAULT '',
+  file_name VARCHAR(255) NOT NULL,
+  file_path TEXT NOT NULL,
+  file_type VARCHAR(30) DEFAULT 'csv',
+  uploaded_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS projects (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  description TEXT DEFAULT '',
+  created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS project_members (
+  project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  member_role VARCHAR(30) DEFAULT 'MEMBER',
+  PRIMARY KEY(project_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS research_outputs (
+  id SERIAL PRIMARY KEY,
+  project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+  title VARCHAR(200) NOT NULL,
+  description TEXT DEFAULT '',
+  file_path TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_datasets_uploaded_by ON datasets(uploaded_by);
+CREATE INDEX IF NOT EXISTS idx_projects_created_by ON projects(created_by);
